@@ -1,0 +1,280 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <div class="text-center mb-8">
+    <div class="inline-block p-3 bg-white rounded-xl shadow-sm mb-4">
+      <svg
+        class="w-10 h-10 text-purple-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+        ></path>
+      </svg>
+    </div>
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Criar Pagamento</h1>
+    <p class="text-gray-600 text-sm">
+      Configure os detalhes do seu pagamento com split
+    </p>
+  </div>
+
+  <div
+    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6"
+  >
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        💰 Valor Total (R$)
+      </label>
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        [(ngModel)]="amountInReais"
+        (input)="updateAmounts()"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+        placeholder="Ex: 1380,00"
+      />
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-700 mb-2">
+        📊 Número de Parcelas
+      </label>
+      <input
+        type="number"
+        [(ngModel)]="installments"
+        min="6"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+        placeholder="Mínimo: 6"
+      />
+    </div>
+
+    <div class="border-t border-gray-200"></div>
+
+    <div>
+      <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+        <span class="bg-purple-100 text-purple-600 rounded-lg p-2 mr-3">
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            ></path>
+          </svg>
+        </span>
+        Detalhes do Item
+      </h2>
+
+      <div class="p-4 bg-gray-50 rounded-lg space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Nome do Item</label
+          >
+          <input
+            type="text"
+            [(ngModel)]="items[0].name"
+            class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+            placeholder="Pagamento da compra"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2"
+            >Descrição</label
+          >
+          <input
+            type="text"
+            [(ngModel)]="items[0].description"
+            class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+            placeholder="Descrição detalhada"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-200"></div>
+
+    <div>
+      <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+        <span class="bg-green-100 text-green-600 rounded-lg p-2 mr-3">
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+            ></path>
+          </svg>
+        </span>
+        Regras de Split
+      </h2>
+
+      <div class="space-y-3">
+        <div
+          *ngFor="let s of split; let i = index"
+          class="p-4 bg-gray-50 rounded-lg space-y-3 border border-gray-200"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <span
+              class="text-xs font-bold text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200"
+            >
+              Split #{{ i + 1 }}
+            </span>
+            <button
+              (click)="split.splice(i, 1)"
+              class="text-red-600 hover:text-red-700 text-sm font-semibold transition-colors"
+            >
+              Remover
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Destinatário</label
+            >
+            <select
+              [(ngModel)]="s.recipientId"
+              (change)="onRecipientChange(s)"
+              class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+            >
+              <option value="">Selecione um destinatário</option>
+              <option value="re_cmhzfqg7300aw0l9te73hcos4">Avengers</option>
+              <option value="re_cmhzfjou7007t0l9t76n27ab3">
+                João da Silva
+              </option>
+              <option value="re_cmhzf5kqt002u0l9t8r1leoow">
+                Renan André Fogaça
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2"
+              >Percentual (%)</label
+            >
+            <input
+              type="number"
+              [(ngModel)]="s.amount"
+              class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
+              placeholder="Ex: 80"
+            />
+          </div>
+
+          <label class="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              [(ngModel)]="s.liable"
+              class="w-4 h-4 text-purple-600 rounded focus:ring-1 focus:ring-purple-300"
+            />
+            <span class="text-sm font-semibold text-gray-700"
+              >Liable (responsável por chargebacks)</span
+            >
+          </label>
+        </div>
+
+        <button
+          (click)="addSplit()"
+          [disabled]="isLoading"
+          class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-100"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            ></path>
+          </svg>
+          <span>Adicionar Split</span>
+        </button>
+      </div>
+    </div>
+
+    <button
+      (click)="submit()"
+      [disabled]="isLoading"
+      class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-purple-600 disabled:hover:shadow-sm"
+    >
+      <span *ngIf="!isLoading">🚀 Criar Pagamento</span>
+      <span
+        *ngIf="isLoading"
+        class="flex items-center justify-center space-x-2"
+      >
+        <svg
+          class="animate-spin h-5 w-5"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <span>Processando...</span>
+      </span>
+    </button>
+
+    <div
+      *ngIf="checkoutUrl"
+      class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg"
+    >
+      <div class="flex items-start space-x-3">
+        <svg
+          class="w-5 h-5 text-green-600 mt-0.5 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          ></path>
+        </svg>
+
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-green-800 mb-1">
+            ✅ Checkout gerado com sucesso!
+          </p>
+          <a
+            [href]="checkoutUrl"
+            target="_blank"
+            class="text-green-700 underline hover:text-green-900 break-all text-sm"
+          >
+            {{ checkoutUrl }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
