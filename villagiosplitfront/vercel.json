@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "buildCommand": "npm install && npm run build",
   "outputDirectory": "dist/villagio-split-front/browser",
   "routes": [{ "src": "/(.*)", "dest": "/index.html" }]
