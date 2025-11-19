@@ -3,7 +3,7 @@ spring:
     name: villagiosplit
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 pagarme:
   api-key: ${PAGARME_API_KEY}
