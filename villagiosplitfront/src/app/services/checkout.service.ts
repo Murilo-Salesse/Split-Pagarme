@@ -1,14 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CheckoutService {
+  private api = 'https://split-pagarme.onrender.com';
+
   constructor(private http: HttpClient) {}
 
   createOrder(data: any) {
-    return this.http.post('http://localhost:8080/', data);
+    return this.http.post(this.api, data);
   }
 }
