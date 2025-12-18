@@ -13,4 +13,7 @@ public class CreatePaymentRequest {
     private Integer installments;
     private List<CartItemDTO> items;
     private List<SplitInputDTO> split;
+
+    // Nova propriedade para receber a secret key da filial
+    private String secretKey;
 }

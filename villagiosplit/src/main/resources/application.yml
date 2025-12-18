@@ -6,5 +6,35 @@ server:
   port: ${PORT:8080}
 
 pagarme:
-  api-key: ${PAGARME_API_KEY}
-  base-url: https://sdx-api.pagar.me/core/v5
+  base-url: https://api.pagar.me/core/v5
+
+# Configuração das filiais - SECRET KEYS em variáveis de ambiente
+filiais:
+  brauna:
+    nome: Braúna
+    secret-key: ${PAGARME_BRAUNA_SECRET_KEY:}
+    public-key: pk_Qa82VbjIBBfMVePO
+    recebedores:
+      - id: re_cm1v0c5ou3d8z0l9tdsmogd9l
+        nome: Villaggio Girotto (Principal)
+        liable: true
+      - id: re_brauna_andreia
+        nome: Andreia
+        liable: false
+      - id: re_brauna_fabiana
+        nome: Fabiana Massagista
+        liable: false
+  minas-gerais:
+    nome: Minas Gerais
+    secret-key: ${PAGARME_MG_SECRET_KEY:}
+    public-key: pk_8yPoXxVf7UpRGjex
+    recebedores:
+      - id: rp_9bV3QoSVOuv24Oj8
+        nome: Villaggio Girotto (Principal)
+        liable: true
+      - id: re_cmhxjk1ii0ts00l9twu3xb7cy
+        nome: Pai/Mãe
+        liable: false
+      - id: re_cmienxadq7hm90l9tna50nwho
+        nome: Bruna
+        liable: false

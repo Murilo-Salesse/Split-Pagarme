@@ -1,1 +1,41 @@
-<router-outlet></router-outlet>
+<!-- Navigation Bar -->
+<nav class="bg-white shadow-sm border-b border-gray-200">
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo / Brand -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-purple-600 p-2 rounded-lg">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+        </div>
+        <span class="font-bold text-gray-800 text-lg">Split Pagar.me</span>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="flex items-center space-x-4">
+        <a
+          routerLink="/checkout"
+          routerLinkActive="bg-purple-100 text-purple-700"
+          [routerLinkActiveOptions]="{exact: true}"
+          class="px-4 py-2 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          💳 Checkout
+        </a>
+        <a
+          routerLink="/customers"
+          routerLinkActive="bg-purple-100 text-purple-700"
+          class="px-4 py-2 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          👥 Clientes
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="min-h-screen bg-gray-50">
+  <router-outlet></router-outlet>
+</main>
+
