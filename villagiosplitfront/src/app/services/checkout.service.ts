@@ -8,8 +8,8 @@ import { Observable } from 'rxjs';
 })
 export class CheckoutService {
   // Altere conforme necessário
-  // private api = 'https://split-pagarme.onrender.com';
-  private api = 'http://localhost:8080';
+  private api = 'https://split-pagarme.onrender.com';
+  // private api = 'http://localhost:8080';
 
   constructor(private http: HttpClient) {}
 
