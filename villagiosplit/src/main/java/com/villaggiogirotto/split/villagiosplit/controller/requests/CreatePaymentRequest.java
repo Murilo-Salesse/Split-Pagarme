@@ -16,4 +16,7 @@ public class CreatePaymentRequest {
 
     // Nova propriedade para receber a secret key da filial
     private String secretKey;
+    
+    // Descrição que aparecerá na fatura do cliente (máx 13 caracteres)
+    private String statementDescriptor;
 }
