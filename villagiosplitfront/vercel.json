@@ -1,3 +1,7 @@
 {
+  "buildCommand": "npm run build -- --configuration=production",
+  "outputDirectory": "dist/villagio-split-front/browser",
+  "installCommand": "npm install",
+  "framework": "angular",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
