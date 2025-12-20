@@ -28,6 +28,18 @@ public class PaymentLinkController {
     }
 
     /**
+     * Health check - retorna status da API
+     */
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "online");
+        response.put("service", "Split Pagar.me API");
+        response.put("version", "1.0.0");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Cria um Payment Link com configuração de split
      *
      * O link retornado pode ser enviado ao cliente para que ele
