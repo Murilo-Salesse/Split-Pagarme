@@ -14,6 +14,9 @@ RUN ./mvnw -q clean package -DskipTests
 
 RUN cp target/*.jar app.jar
 
+# Render usa a variável PORT
+ENV PORT=8080
 EXPOSE 8080
 
-CMD ["java", "-jar", "app.jar"]
+# Usar shell form para que a variável seja expandida corretamente
+CMD java -Dserver.port=${PORT} -jar app.jar
