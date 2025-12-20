@@ -23,7 +23,6 @@ export class CheckoutComponent implements OnInit {
   installments = 6;
   isLoading = false;
 
-  // Controle de filiais
   filialSelecionada: string = '';
   filiais: { [key: string]: Filial } = {};
   recebedoresDisponiveis: Recebedor[] = [];
