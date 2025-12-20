@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080',
+  apiUrl: 'https://split-pagarme.onrender.com',
 
   // IMPORTANTE: As filiais agora são carregadas do backend via API
   // As secret keys estão protegidas em variáveis de ambiente no servidor

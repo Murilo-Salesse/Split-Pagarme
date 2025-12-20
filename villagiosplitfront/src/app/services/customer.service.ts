@@ -70,7 +70,7 @@ export interface CreateCustomerResponse {
   providedIn: 'root',
 })
 export class CustomerService {
-  private api = 'http://localhost:8080';
+  private api = 'https://split-pagarme.onrender.com';
 
   constructor(private http: HttpClient) {}
 
