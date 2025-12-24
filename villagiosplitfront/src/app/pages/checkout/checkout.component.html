@@ -425,14 +425,14 @@
               >
               <input
                 type="text"
-                [(ngModel)]="s.amountDisplay"
-                (blur)="parseCurrencyToAmount(s)"
+                [value]="s.amountDisplay"
+                (input)="onSplitAmountInput(s, $event)"
                 class="w-full p-3 pl-12 border border-gray-300 rounded-lg bg-white focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"
-                placeholder="342,40"
+                placeholder="Digite os centavos (ex: 486 = R$ 4,86)"
               />
             </div>
             <p class="text-xs text-gray-500 mt-1">
-              Valor convertido: {{ formatCurrency(s.amount) }}
+              💡 Digite apenas números. Ex: 34240 = R$ 342,40
             </p>
           </div>
 

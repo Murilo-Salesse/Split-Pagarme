@@ -202,16 +202,27 @@ export class CheckoutComponent implements OnInit {
     }).format(value / 100);
   }
 
-  parseCurrencyToAmount(split: SplitRule) {
-    if (this.splitType === 'flat' && split.amountDisplay) {
-      // Parse Brazilian currency format (1.234,56 or 1234,56)
-      let value = split.amountDisplay;
-      value = value.replace(/[^\d.,]/g, '');
-      value = value.replace(/\./g, ''); // Remove thousand separators
-      value = value.replace(',', '.'); // Replace decimal comma with dot
-      const numericValue = parseFloat(value) || 0;
-      split.amount = Math.round(numericValue * 100); // Convert to centavos
+  onSplitAmountInput(split: SplitRule, event: any) {
+    // Remove tudo que não é número
+    let rawValue = event.target.value.replace(/\D/g, '');
+    
+    // Converte para número (já em centavos)
+    const centavos = parseInt(rawValue, 10) || 0;
+    split.amount = centavos;
+    
+    // Formata para exibição (ex: 486 -> "4,86")
+    if (centavos === 0) {
+      split.amountDisplay = '';
+    } else {
+      const reais = centavos / 100;
+      split.amountDisplay = reais.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     }
+    
+    // Atualiza o valor no input
+    event.target.value = split.amountDisplay;
   }
 
   onRecipientChange(split: SplitRule) {
