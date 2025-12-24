@@ -32,17 +32,26 @@ public class SplitInputDTO {
     private String recipientId;
 
     /**
-     * Percentual que este recebedor receberá
+     * Valor do split (percentual ou valor fixo em centavos)
      *
-     * Valor entre 0 e 100
-     * A soma de todos os splits DEVE ser exatamente 100
+     * Para type='percentage': Valor entre 0 e 100
+     * Para type='flat': Valor em centavos
      *
      * Exemplos:
-     * - 90 = 90% do valor total
-     * - 10 = 10% do valor total
-     * - 33.33 = 33.33% do valor total (aceita decimais)
+     * - 90 (percentage) = 90% do valor total
+     * - 50000 (flat) = R$ 500,00 em centavos
      */
     private Integer amount;
+
+    /**
+     * Tipo de divisão: percentage ou flat
+     *
+     * - percentage: Divide por porcentagem (soma deve ser 100%)
+     * - flat: Divide por valor fixo em centavos (soma deve ser igual ao total)
+     *
+     * Default: percentage
+     */
+    private String type = "percentage";
 
     /**
      * Define se este recebedor é responsável (liable) pelo pagamento
@@ -88,6 +97,17 @@ public class SplitInputDTO {
         this.recipientId = recipientId;
         this.amount = amount;
         this.liable = liable;
+        this.type = "percentage";
+    }
+
+    /**
+     * Construtor completo com type
+     */
+    public SplitInputDTO(String recipientId, Integer amount, String type, Boolean liable) {
+        this.recipientId = recipientId;
+        this.amount = amount;
+        this.type = type != null ? type : "percentage";
+        this.liable = liable;
     }
 
     /**
@@ -110,10 +130,28 @@ public class SplitInputDTO {
             throw new IllegalArgumentException("amount é obrigatório");
         }
 
-        if (amount <= 0 || amount > 100) {
+        // Validação de type
+        String splitType = this.type != null ? this.type : "percentage";
+        if (!splitType.equals("percentage") && !splitType.equals("flat")) {
             throw new IllegalArgumentException(
-                    "amount deve estar entre 1 e 100. Recebido: " + amount
+                    "type deve ser 'percentage' ou 'flat'. Recebido: " + splitType
             );
+        }
+
+        // Validação de amount baseada no type
+        if (splitType.equals("percentage")) {
+            if (amount <= 0 || amount > 100) {
+                throw new IllegalArgumentException(
+                        "amount deve estar entre 1 e 100 para type 'percentage'. Recebido: " + amount
+                );
+            }
+        } else {
+            // flat: deve ser positivo
+            if (amount <= 0) {
+                throw new IllegalArgumentException(
+                        "amount deve ser maior que 0 para type 'flat'. Recebido: " + amount
+                );
+            }
         }
 
         if (liable == null) {
@@ -123,9 +161,10 @@ public class SplitInputDTO {
 
     @Override
     public String toString() {
+        String unit = "percentage".equals(type) ? "%" : " centavos";
         return String.format(
-                "SplitInputDTO{recipientId='%s', amount=%d%%, liable=%s}",
-                recipientId, amount, liable
+                "SplitInputDTO{recipientId='%s', amount=%d%s, type='%s', liable=%s}",
+                recipientId, amount, unit, type, liable
         );
     }
 }

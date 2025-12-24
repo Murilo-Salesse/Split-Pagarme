@@ -42,14 +42,28 @@ public class PagarmePaymentLinkService {
 
         // Validação do split
         if (req.getSplit() != null && !req.getSplit().isEmpty()) {
-            int totalPercentage = req.getSplit().stream()
+            // Verificar se todos os splits têm o mesmo tipo
+            String splitType = req.getSplit().get(0).getType();
+            if (splitType == null) splitType = "percentage";
+            
+            int totalAmount = req.getSplit().stream()
                     .mapToInt(SplitInputDTO::getAmount)
                     .sum();
 
-            if (totalPercentage != 100) {
-                return Mono.error(new IllegalArgumentException(
-                        "A soma dos percentuais do split deve ser 100%. Atual: " + totalPercentage + "%"
-                ));
+            if ("percentage".equals(splitType)) {
+                if (totalAmount != 100) {
+                    return Mono.error(new IllegalArgumentException(
+                            "A soma dos percentuais do split deve ser 100%. Atual: " + totalAmount + "%"
+                    ));
+                }
+            } else {
+                // flat: soma deve ser igual ao valor total
+                int expectedTotal = calculateTotalAmount(req);
+                if (totalAmount != expectedTotal) {
+                    return Mono.error(new IllegalArgumentException(
+                            "A soma dos valores do split (" + totalAmount + ") deve ser igual ao valor total (" + expectedTotal + ")"
+                    ));
+                }
             }
         }
 
@@ -188,7 +202,9 @@ public class PagarmePaymentLinkService {
         for (SplitInputDTO split : splitList) {
             Map<String, Object> rule = new HashMap<>();
 
-            rule.put("type", "percentage");
+            // Usa o type do split (percentage ou flat)
+            String splitType = split.getType() != null ? split.getType() : "percentage";
+            rule.put("type", splitType);
             rule.put("amount", split.getAmount());
             rule.put("recipient_id", split.getRecipientId());
 

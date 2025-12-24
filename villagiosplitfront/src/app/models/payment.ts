@@ -11,6 +11,8 @@ export interface CartItem {
 export interface SplitRule {
   recipientId: string;
   amount: number;
+  amountDisplay?: string; // For flat mode - stores the text input
+  type: 'percentage' | 'flat';
   liable: boolean;
 }
 

@@ -44,6 +44,7 @@ export class CheckoutComponent implements OnInit {
   ];
 
   split: SplitRule[] = [];
+  splitType: 'percentage' | 'flat' = 'percentage';
 
   // Resultados
   checkoutUrl: string | null = null;
@@ -179,8 +180,38 @@ export class CheckoutComponent implements OnInit {
     this.split.push({
       recipientId: '',
       amount: 0,
+      amountDisplay: '',
+      type: this.splitType,
       liable: false,
     });
+  }
+
+  onSplitTypeChange() {
+    // Reset all split amounts and update type when global type changes
+    this.split.forEach(s => {
+      s.amount = 0;
+      s.amountDisplay = '';
+      s.type = this.splitType;
+    });
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value / 100);
+  }
+
+  parseCurrencyToAmount(split: SplitRule) {
+    if (this.splitType === 'flat' && split.amountDisplay) {
+      // Parse Brazilian currency format (1.234,56 or 1234,56)
+      let value = split.amountDisplay;
+      value = value.replace(/[^\d.,]/g, '');
+      value = value.replace(/\./g, ''); // Remove thousand separators
+      value = value.replace(',', '.'); // Replace decimal comma with dot
+      const numericValue = parseFloat(value) || 0;
+      split.amount = Math.round(numericValue * 100); // Convert to centavos
+    }
   }
 
   onRecipientChange(split: SplitRule) {
@@ -215,9 +246,21 @@ export class CheckoutComponent implements OnInit {
 
     // Valida soma do split
     const totalSplit = this.split.reduce((sum, s) => sum + s.amount, 0);
-    if (totalSplit !== 100) {
-      alert(`A soma do split deve ser 100%. Atual: ${totalSplit}%`);
-      return false;
+    
+    if (this.splitType === 'percentage') {
+      if (totalSplit !== 100) {
+        alert(`A soma do split deve ser 100%. Atual: ${totalSplit}%`);
+        return false;
+      }
+    } else {
+      // flat type - soma deve ser igual ao valor total em centavos
+      const totalAmountCentavos = Math.round(this.amountInReais * 100);
+      if (totalSplit !== totalAmountCentavos) {
+        const totalSplitReais = this.formatCurrency(totalSplit);
+        const expectedReais = this.formatCurrency(totalAmountCentavos);
+        alert(`A soma do split (${totalSplitReais}) deve ser igual ao valor total (${expectedReais})`);
+        return false;
+      }
     }
 
     // Valida dados do cliente para Orders API
