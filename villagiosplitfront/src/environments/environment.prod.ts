@@ -5,7 +5,6 @@ export const environment = {
   filiais: {
     brauna: {
       nome: 'Braúna',
-      secretKey: 'sk_df1ed3c001cd4e7e8d82f04e2a4de05a',
       publicKey: 'pk_Qa82VbjIBBfMVePO',
       recebedores: [
         {
@@ -27,7 +26,6 @@ export const environment = {
     },
     minasGerais: {
       nome: 'Minas Gerais',
-      secretKey: 'sk_6d2cf72a6e6649909893102dbf73d87d',
       publicKey: 'pk_8yPoXxVf7UpRGjex',
       recebedores: [
         {

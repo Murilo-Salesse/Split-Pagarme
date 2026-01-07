@@ -3,7 +3,9 @@ package com.villaggiogirotto.split.villagiosplit.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.villaggiogirotto.split.villagiosplit.controller.requests.CreatePaymentRequest;
 import com.villaggiogirotto.split.villagiosplit.dto.CartItemDTO;
+
 import com.villaggiogirotto.split.villagiosplit.dto.SplitInputDTO;
+import com.villaggiogirotto.split.villagiosplit.config.FiliaisConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -29,6 +31,12 @@ public class PagarmePaymentLinkService {
     @Value("${pagarme.base-url}")
     private String baseUrl;
 
+    private final FiliaisConfig filiaisConfig;
+
+    public PagarmePaymentLinkService(FiliaisConfig filiaisConfig) {
+        this.filiaisConfig = filiaisConfig;
+    }
+
     /**
      * Cria um Payment Link com configuração de split
      *
@@ -36,8 +44,13 @@ public class PagarmePaymentLinkService {
      * @return Resposta da API Pagar.me contendo checkout_url
      */
     public Mono<JsonNode> createPaymentLink(CreatePaymentRequest req) {
-        if (req.getSecretKey() == null || req.getSecretKey().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("Secret Key é obrigatória"));
+        if (req.getFilialId() == null || req.getFilialId().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("ID da filial é obrigatório"));
+        }
+
+        String secretKey = getSecretKeyByFilialId(req.getFilialId());
+        if (secretKey == null) {
+            return Mono.error(new IllegalArgumentException("Filial não encontrada ou sem chave configurada: " + req.getFilialId()));
         }
 
         // Validação do split
@@ -67,7 +80,9 @@ public class PagarmePaymentLinkService {
             }
         }
 
-        WebClient webClient = createWebClient(req.getSecretKey());
+
+
+        WebClient webClient = createWebClient(secretKey);
         Map<String, Object> payload = buildPaymentLinkPayload(req);
 
         return webClient.post()
@@ -239,5 +254,18 @@ public class PagarmePaymentLinkService {
         }
 
         return 0;
+    }
+    private String getSecretKeyByFilialId(String filialId) {
+        FiliaisConfig.FilialConfig filial = null;
+        switch (filialId.toLowerCase()) {
+            case "brauna":
+                filial = filiaisConfig.getBrauna();
+                break;
+            case "minasgerais":
+            case "minas-gerais":
+                filial = filiaisConfig.getMinasGerais();
+                break;
+        }
+        return (filial != null) ? filial.getSecretKey() : null;
     }
 }

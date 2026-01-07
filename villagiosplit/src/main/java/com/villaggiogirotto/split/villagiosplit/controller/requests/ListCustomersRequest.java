@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ListCustomersRequest {
-    private String secretKey; // Chave da API Pagar.me (obrigatório)
+    private String filialId; // ID da filial (obrigatório)
     
     // Filtros opcionais
     private String name;

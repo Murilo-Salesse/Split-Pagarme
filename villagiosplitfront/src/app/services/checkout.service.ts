@@ -17,10 +17,9 @@ export class CheckoutService {
    * ✅ MÉTODO ORIGINAL - Mantido para compatibilidade
    * Cria um Payment Link (método que você já usa)
    */
-  createOrder(data: any, secretKey: string): Observable<any> {
+  createOrder(data: any): Observable<any> {
     const payload = {
-      ...data,
-      secretKey: secretKey,
+      ...data
     };
 
     const headers = new HttpHeaders({
@@ -35,10 +34,9 @@ export class CheckoutService {
    * 🆕 NOVO - Cria um Payment Link (mesmo que createOrder, mas com nome mais claro)
    * Use este se quiser deixar o código mais explícito
    */
-  createPaymentLink(data: any, secretKey: string): Observable<any> {
+  createPaymentLink(data: any): Observable<any> {
     const payload = {
-      ...data,
-      secretKey: secretKey,
+      ...data
     };
 
     const headers = new HttpHeaders({
@@ -52,10 +50,9 @@ export class CheckoutService {
    * 🆕 NOVO - Cria um Order com PIX
    * Retorna QR Code para pagamento instantâneo
    */
-  createPixOrder(data: any, secretKey: string): Observable<any> {
+  createPixOrder(data: any): Observable<any> {
     const payload = {
       ...data,
-      secretKey: secretKey,
       paymentMethod: 'pix',
     };
 
@@ -70,10 +67,9 @@ export class CheckoutService {
    * 🆕 NOVO - Cria um Order com Boleto
    * Retorna código de barras e PDF do boleto
    */
-  createBoletoOrder(data: any, secretKey: string): Observable<any> {
+  createBoletoOrder(data: any): Observable<any> {
     const payload = {
       ...data,
-      secretKey: secretKey,
       paymentMethod: 'boleto',
     };
 
@@ -88,10 +84,9 @@ export class CheckoutService {
    * 🆕 NOVO - Cria um Order com Cartão de Crédito
    * ⚠️ ATENÇÃO: Requer tokenização do cartão no frontend!
    */
-  createCreditCardOrder(data: any, secretKey: string): Observable<any> {
+  createCreditCardOrder(data: any): Observable<any> {
     const payload = {
       ...data,
-      secretKey: secretKey,
       paymentMethod: 'credit_card',
     };
 
@@ -108,10 +103,9 @@ export class CheckoutService {
    * 🆕 NOVO - Cria um Order genérico
    * Permite especificar qualquer método de pagamento manualmente
    */
-  createGenericOrder(data: any, secretKey: string): Observable<any> {
+  createGenericOrder(data: any): Observable<any> {
     const payload = {
-      ...data,
-      secretKey: secretKey,
+      ...data
     };
 
     const headers = new HttpHeaders({

@@ -14,8 +14,8 @@ public class CreatePaymentRequest {
     private List<CartItemDTO> items;
     private List<SplitInputDTO> split;
 
-    // Nova propriedade para receber a secret key da filial
-    private String secretKey;
+    // ID da filial para buscar a secret key internamente
+    private String filialId;
     
     // Descrição que aparecerá na fatura do cliente (máx 13 caracteres)
     private String statementDescriptor;

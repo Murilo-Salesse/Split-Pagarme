@@ -11,13 +11,11 @@ export const environment = {
   filiais: {
     brauna: {
       nome: 'Braúna',
-      secretKey: '', // Será carregado do backend
       publicKey: 'pk_Qa82VbjIBBfMVePO',
       recebedores: [] as any[],
     },
     minasGerais: {
       nome: 'Minas Gerais',
-      secretKey: '', // Será carregado do backend
       publicKey: 'pk_8yPoXxVf7UpRGjex',
       recebedores: [] as any[],
     },

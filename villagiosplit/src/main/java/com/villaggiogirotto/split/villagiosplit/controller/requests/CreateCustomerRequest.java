@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Data
 public class CreateCustomerRequest {
-    private String secretKey; // Chave da API Pagar.me (obrigatório)
+    private String filialId; // ID da filial (obrigatório)
     
     // Dados do cliente
     private String name; // Obrigatório - Max: 64 caracteres

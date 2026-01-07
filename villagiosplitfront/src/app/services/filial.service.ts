@@ -25,12 +25,6 @@ export interface FiliaisResponse {
   error?: string;
 }
 
-export interface SecretKeyResponse {
-  success: boolean;
-  secretKey?: string;
-  error?: string;
-}
-
 @Injectable({
   providedIn: 'root',
 })
@@ -44,12 +38,5 @@ export class FilialService {
    */
   listFiliais(): Observable<FiliaisResponse> {
     return this.http.get<FiliaisResponse>(`${this.api}/filiais`);
-  }
-
-  /**
-   * Obtém a secretKey de uma filial específica
-   */
-  getSecretKey(filialId: string): Observable<SecretKeyResponse> {
-    return this.http.get<SecretKeyResponse>(`${this.api}/filiais/${filialId}/secret`);
   }
 }

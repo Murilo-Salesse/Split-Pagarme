@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 public class CreateOrderRequest {
-    private String secretKey;
+    private String filialId;
     private String code; // Identificador no seu sistema
     private Integer amount; // Fallback se não enviar items
 

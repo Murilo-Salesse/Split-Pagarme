@@ -3,7 +3,9 @@ package com.villaggiogirotto.split.villagiosplit.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.villaggiogirotto.split.villagiosplit.controller.requests.CreateCustomerRequest;
 import com.villaggiogirotto.split.villagiosplit.controller.requests.ListCustomersRequest;
+
 import com.villaggiogirotto.split.villagiosplit.dto.AddressDTO;
+import com.villaggiogirotto.split.villagiosplit.config.FiliaisConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,20 +23,31 @@ public class PagarmeCustomerService {
     @Value("${pagarme.base-url}")
     private String baseUrl;
 
+    private final FiliaisConfig filiaisConfig;
+
+    public PagarmeCustomerService(FiliaisConfig filiaisConfig) {
+        this.filiaisConfig = filiaisConfig;
+    }
+
     /**
      * Cria um cliente na API Pagar.me
      * POST https://api.pagar.me/core/v5/customers
      */
     public Mono<JsonNode> createCustomer(CreateCustomerRequest req) {
-        if (req.getSecretKey() == null || req.getSecretKey().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("Secret Key é obrigatória"));
+        if (req.getFilialId() == null || req.getFilialId().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("ID da filial é obrigatório"));
+        }
+
+        String secretKey = getSecretKeyByFilialId(req.getFilialId());
+        if (secretKey == null) {
+            return Mono.error(new IllegalArgumentException("Filial não encontrada ou sem chave configurada: " + req.getFilialId()));
         }
 
         if (req.getName() == null || req.getName().isEmpty()) {
             return Mono.error(new IllegalArgumentException("Nome do cliente é obrigatório"));
         }
 
-        WebClient webClient = createWebClient(req.getSecretKey());
+        WebClient webClient = createWebClient(secretKey);
         Map<String, Object> payload = buildCustomerPayload(req);
 
         return webClient.post()
@@ -56,11 +69,16 @@ public class PagarmeCustomerService {
      * GET https://api.pagar.me/core/v5/customers
      */
     public Mono<JsonNode> listCustomers(ListCustomersRequest req) {
-        if (req.getSecretKey() == null || req.getSecretKey().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("Secret Key é obrigatória"));
+        if (req.getFilialId() == null || req.getFilialId().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("ID da filial é obrigatório"));
         }
 
-        WebClient webClient = createWebClient(req.getSecretKey());
+        String secretKey = getSecretKeyByFilialId(req.getFilialId());
+        if (secretKey == null) {
+            return Mono.error(new IllegalArgumentException("Filial não encontrada ou sem chave configurada: " + req.getFilialId()));
+        }
+
+        WebClient webClient = createWebClient(secretKey);
         
         // Construir query params
         UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/customers");
@@ -107,15 +125,20 @@ public class PagarmeCustomerService {
      * PUT https://api.pagar.me/core/v5/customers/{customer_id}
      */
     public Mono<JsonNode> updateCustomer(String customerId, CreateCustomerRequest req) {
-        if (req.getSecretKey() == null || req.getSecretKey().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("Secret Key é obrigatória"));
+        if (req.getFilialId() == null || req.getFilialId().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("ID da filial é obrigatório"));
+        }
+
+        String secretKey = getSecretKeyByFilialId(req.getFilialId());
+        if (secretKey == null) {
+            return Mono.error(new IllegalArgumentException("Filial não encontrada ou sem chave configurada: " + req.getFilialId()));
         }
 
         if (customerId == null || customerId.isEmpty()) {
             return Mono.error(new IllegalArgumentException("Customer ID é obrigatório"));
         }
 
-        WebClient webClient = createWebClient(req.getSecretKey());
+        WebClient webClient = createWebClient(secretKey);
         Map<String, Object> payload = buildCustomerPayload(req);
 
         return webClient.put()
@@ -204,5 +227,18 @@ public class PagarmeCustomerService {
         }
 
         return addressMap;
+    }
+    private String getSecretKeyByFilialId(String filialId) {
+        FiliaisConfig.FilialConfig filial = null;
+        switch (filialId.toLowerCase()) {
+            case "brauna":
+                filial = filiaisConfig.getBrauna();
+                break;
+            case "minasgerais":
+            case "minas-gerais":
+                filial = filiaisConfig.getMinasGerais();
+                break;
+        }
+        return (filial != null) ? filial.getSecretKey() : null;
     }
 }

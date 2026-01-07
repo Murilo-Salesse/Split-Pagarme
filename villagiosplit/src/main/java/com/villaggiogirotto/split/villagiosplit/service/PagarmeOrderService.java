@@ -3,6 +3,8 @@ package com.villaggiogirotto.split.villagiosplit.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.villaggiogirotto.split.villagiosplit.controller.requests.CreateOrderRequest;
 import com.villaggiogirotto.split.villagiosplit.dto.*;
+import com.villaggiogirotto.split.villagiosplit.dto.*;
+import com.villaggiogirotto.split.villagiosplit.config.FiliaisConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,25 +20,44 @@ public class PagarmeOrderService {
     @Value("${pagarme.base-url}")
     private String baseUrl;
 
+    private final FiliaisConfig filiaisConfig;
+
+    public PagarmeOrderService(FiliaisConfig filiaisConfig) {
+        this.filiaisConfig = filiaisConfig;
+    }
+
     public Mono<JsonNode> createOrder(CreateOrderRequest req) {
-        if (req.getSecretKey() == null || req.getSecretKey().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("Secret Key é obrigatória"));
+        if (req.getFilialId() == null || req.getFilialId().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("ID da filial é obrigatório"));
+        }
+
+        String secretKey = getSecretKeyByFilialId(req.getFilialId());
+        if (secretKey == null) {
+            return Mono.error(new IllegalArgumentException("Filial não encontrada ou sem chave configurada: " + req.getFilialId()));
         }
 
         // Validação do split
         if (req.getSplit() != null && !req.getSplit().isEmpty()) {
-            int totalPercentage = req.getSplit().stream()
+            // Verificar se todos os splits têm o mesmo tipo
+            String splitType = req.getSplit().get(0).getType();
+            if (splitType == null) splitType = "percentage";
+
+            int totalAmount = req.getSplit().stream()
                     .mapToInt(SplitInputDTO::getAmount)
                     .sum();
 
-            if (totalPercentage != 100) {
-                return Mono.error(new IllegalArgumentException(
-                        "A soma dos percentuais do split deve ser 100%. Atual: " + totalPercentage + "%"
-                ));
+            if ("percentage".equals(splitType)) {
+                if (totalAmount != 100) {
+                    return Mono.error(new IllegalArgumentException(
+                            "A soma dos percentuais do split deve ser 100%. Atual: " + totalAmount + "%"
+                    ));
+                }
+            } else {
+                // flat validation is harder without request total here, maybe skip strict validation or calc it
             }
         }
 
-        WebClient webClient = createWebClient(req.getSecretKey());
+        WebClient webClient = createWebClient(secretKey);
         Map<String, Object> payload = buildOrderPayload(req);
 
         return webClient.post()
@@ -344,7 +365,7 @@ public class PagarmeOrderService {
             Map<String, Object> splitMap = new HashMap<>();
 
             splitMap.put("amount", split.getAmount());
-            splitMap.put("type", "percentage");
+            splitMap.put("type", split.getType() != null ? split.getType() : "percentage");
             splitMap.put("recipient_id", split.getRecipientId());
 
             // Options
@@ -381,5 +402,18 @@ public class PagarmeOrderService {
         }
 
         return shippingMap;
+    }
+    private String getSecretKeyByFilialId(String filialId) {
+        FiliaisConfig.FilialConfig filial = null;
+        switch (filialId.toLowerCase()) {
+            case "brauna":
+                filial = filiaisConfig.getBrauna();
+                break;
+            case "minasgerais":
+            case "minas-gerais":
+                filial = filiaisConfig.getMinasGerais();
+                break;
+        }
+        return (filial != null) ? filial.getSecretKey() : null;
     }
 }

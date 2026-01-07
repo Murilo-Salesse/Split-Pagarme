@@ -40,47 +40,9 @@ public class FilialController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Retorna a secretKey de uma filial específica
-     * GET /filiais/{filialId}/secret
-     * 
-     * Nota: Em produção, este endpoint deveria ter autenticação/autorização adequada
-     */
-    @GetMapping("/{filialId}/secret")
-    public ResponseEntity<Map<String, Object>> getFilialSecret(@PathVariable String filialId) {
-        FiliaisConfig.FilialConfig filial = getFilialById(filialId);
 
-        if (filial == null) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("error", "Filial não encontrada: " + filialId);
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
 
-        if (filial.getSecretKey() == null || filial.getSecretKey().isEmpty()) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("error", "Secret key não configurada para filial: " + filialId);
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("secretKey", filial.getSecretKey());
-        return ResponseEntity.ok(response);
-    }
-
-    private FiliaisConfig.FilialConfig getFilialById(String filialId) {
-        switch (filialId.toLowerCase()) {
-            case "brauna":
-                return filiaisConfig.getBrauna();
-            case "minasgerais":
-            case "minas-gerais":
-                return filiaisConfig.getMinasGerais();
-            default:
-                return null;
-        }
-    }
 
     private Map<String, Object> buildFilialResponse(FiliaisConfig.FilialConfig filial) {
         Map<String, Object> filialMap = new HashMap<>();

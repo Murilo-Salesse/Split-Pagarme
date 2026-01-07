@@ -73,6 +73,7 @@ export interface Shipping {
 
 // Request para Payment Links (endpoint atual)
 export interface CreatePaymentLinkRequest {
+  filialId: string;
   amount: number;
   installments: number;
   items: CartItem[];
@@ -81,6 +82,7 @@ export interface CreatePaymentLinkRequest {
 
 // Request para Orders API (novo endpoint)
 export interface CreateOrderRequest {
+  filialId: string;
   code?: string;
   amount?: number; // Fallback se não enviar items
 

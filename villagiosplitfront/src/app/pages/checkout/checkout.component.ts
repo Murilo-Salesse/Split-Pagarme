@@ -100,42 +100,23 @@ export class CheckoutComponent implements OnInit {
     this.clearResults();
     this.customers = [];
     this.selectedCustomerId = '';
-    this.currentSecretKey = '';
 
     const filial = this.filiais[this.filialSelecionada];
     if (filial) {
       this.recebedoresDisponiveis = filial.recebedores || [];
-      this.loadSecretKey();
+      // Carregar clientes da filial selecionada (sem secretKey)
+      this.loadCustomers();
     } else {
       this.recebedoresDisponiveis = [];
     }
   }
 
-  loadSecretKey() {
+  loadCustomers() {
     if (!this.filialSelecionada) return;
 
-    this.isLoadingSecretKey = true;
-    this.filialService.getSecretKey(this.filialSelecionada).subscribe({
-      next: (res) => {
-        if (res.success && res.secretKey) {
-          this.currentSecretKey = res.secretKey;
-          this.loadCustomers();
-        } else {
-          // Erro ao obter secretKey
-        }
-        this.isLoadingSecretKey = false;
-      },
-      error: (err) => {
-        this.isLoadingSecretKey = false;
-      },
-    });
-  }
-
-  loadCustomers() {
-    if (!this.currentSecretKey) return;
-
     this.isLoadingCustomers = true;
-    this.customerService.listCustomers(this.currentSecretKey, { size: 50 }).subscribe({
+    // Agora passa o ID da filial
+    this.customerService.listCustomers(this.filialSelecionada, { size: 50 }).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.customers = res.data.data || [];
@@ -148,15 +129,8 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  getFilialConfig(): { secretKey: string; publicKey: string; nome: string; recebedores: Recebedor[] } | null {
-    const filial = this.filiais[this.filialSelecionada];
-    if (filial) {
-      return {
-        ...filial,
-        secretKey: this.currentSecretKey,
-      };
-    }
-    return null;
+  getFilialConfig(): Filial | null {
+    return this.filiais[this.filialSelecionada] || null;
   }
 
   updateAmounts() {
@@ -297,41 +271,30 @@ export class CheckoutComponent implements OnInit {
       return;
     }
 
-    const filialConfig = this.getFilialConfig();
-    if (!filialConfig) {
-      alert('Configuração da filial não encontrada!');
-      return;
-    }
-
-    if (!filialConfig.secretKey) {
-      alert('Secret Key não carregada. Aguarde ou recarregue a página.');
-      return;
-    }
-
     this.updateAmounts();
     this.isLoading = true;
     this.clearResults();
 
-
     // Escolhe o método correto baseado na seleção
     switch (this.paymentMethod) {
       case 'payment_link':
-        this.submitPaymentLink(filialConfig);
+        this.submitPaymentLink();
         break;
       case 'pix':
-        this.submitPixOrder(filialConfig);
+        this.submitPixOrder();
         break;
       case 'boleto':
-        this.submitBoletoOrder(filialConfig);
+        this.submitBoletoOrder();
         break;
       case 'credit_card':
-        this.submitCreditCardOrder(filialConfig);
+        this.submitCreditCardOrder();
         break;
     }
   }
 
-  private submitPaymentLink(filialConfig: Filial) {
+  private submitPaymentLink() {
     const body: CreatePaymentLinkRequest = {
+      filialId: this.filialSelecionada,
       amount: Math.round(this.amountInReais * 100),
       installments: this.installments,
       items: this.items,
@@ -339,7 +302,7 @@ export class CheckoutComponent implements OnInit {
     };
 
     this.checkoutService
-      .createPaymentLink(body, filialConfig.secretKey!)
+      .createPaymentLink(body)
       .subscribe({
         next: (res: PaymentResponse) => {
           this.checkoutUrl = res.checkout_url || null;
@@ -352,8 +315,9 @@ export class CheckoutComponent implements OnInit {
       });
   }
 
-  private submitPixOrder(filialConfig: Filial) {
+  private submitPixOrder() {
     const body: CreateOrderRequest = {
+      filialId: this.filialSelecionada,
       code: `ORDER-${Date.now()}`,
       items: this.items,
       paymentMethod: 'pix',
@@ -371,7 +335,7 @@ export class CheckoutComponent implements OnInit {
     }
 
     this.checkoutService
-      .createPixOrder(body, filialConfig.secretKey!)
+      .createPixOrder(body)
       .subscribe({
         next: (res: PaymentResponse) => {
           this.pixQrCode = res.pix_qr_code || null;
@@ -386,11 +350,12 @@ export class CheckoutComponent implements OnInit {
       });
   }
 
-  private submitBoletoOrder(filialConfig: Filial) {
+  private submitBoletoOrder() {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 3); // Vence em 3 dias
 
     const body: CreateOrderRequest = {
+      filialId: this.filialSelecionada,
       code: `ORDER-${Date.now()}`,
       items: this.items,
       paymentMethod: 'boleto',
@@ -409,7 +374,7 @@ export class CheckoutComponent implements OnInit {
     }
 
     this.checkoutService
-      .createBoletoOrder(body, filialConfig.secretKey!)
+      .createBoletoOrder(body)
       .subscribe({
         next: (res: PaymentResponse) => {
           this.boletoUrl = res.boleto_url || null;
@@ -425,11 +390,12 @@ export class CheckoutComponent implements OnInit {
       });
   }
 
-  private submitCreditCardOrder(filialConfig: Filial) {
+  private submitCreditCardOrder() {
     // ATENÇÃO: Em produção, você deve tokenizar o cartão primeiro!
     // Este exemplo usa card_id (cartão já salvo)
 
     const body: CreateOrderRequest = {
+      filialId: this.filialSelecionada,
       code: `ORDER-${Date.now()}`,
       items: this.items,
       paymentMethod: 'credit_card',
@@ -454,7 +420,7 @@ export class CheckoutComponent implements OnInit {
     }
 
     this.checkoutService
-      .createCreditCardOrder(body, filialConfig.secretKey!)
+      .createCreditCardOrder(body)
       .subscribe({
         next: (res: PaymentResponse) => {
           this.transactionStatus = res.status || 'processing';
@@ -476,6 +442,35 @@ export class CheckoutComponent implements OnInit {
   getFilialNome(): string {
     const config = this.getFilialConfig();
     return config ? config.nome : '';
+  }
+
+  resetForm() {
+    this.filialSelecionada = '';
+    this.amountInReais = 0;
+    this.installments = 6;
+    this.items = [
+      {
+        name: 'Pagamento da compra',
+        description: 'Pagamento da compra',
+        amount: 0,
+        defaultQuantity: 1,
+      },
+    ];
+    this.split = [];
+    this.splitType = 'percentage';
+    this.paymentMethod = 'payment_link';
+    this.useExistingCustomer = false;
+    this.selectedCustomerId = '';
+    this.customerData = {
+      name: '',
+      email: '',
+      document: '',
+      documentType: 'CPF',
+      type: 'individual',
+    };
+    this.recebedoresDisponiveis = [];
+
+    this.clearResults();
   }
 
   // Helpers para exibir resultados

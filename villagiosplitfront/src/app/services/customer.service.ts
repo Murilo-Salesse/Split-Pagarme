@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { Customer } from '../models/payment';
 
 export interface CreateCustomerRequest {
-  secretKey: string;
+  filialId: string;
   name: string;
   email?: string;
   document?: string;
@@ -95,7 +95,7 @@ export class CustomerService {
    * Lista clientes da API Pagar.me
    */
   listCustomers(
-    secretKey: string,
+    filialId: string,
     filters?: {
       name?: string;
       document?: string;
@@ -114,8 +114,10 @@ export class CustomerService {
 
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'X-Secret-Key': secretKey,
     });
+
+    // Adiciona filialId aos params
+    params = params.set('filialId', filialId);
 
     return this.http.get<CustomerListResponse>(`${this.api}/customers`, {
       headers,

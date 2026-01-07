@@ -47,8 +47,9 @@ public class CustomerController {
      * GET /customers
      */
     @GetMapping
+
     public Mono<ResponseEntity<Map<String, Object>>> listCustomers(
-            @RequestHeader("X-Secret-Key") String secretKey,
+            @RequestParam String filialId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String document,
             @RequestParam(required = false) String email,
@@ -58,7 +59,7 @@ public class CustomerController {
             @RequestParam(defaultValue = "10") Integer size
     ) {
         ListCustomersRequest req = new ListCustomersRequest();
-        req.setSecretKey(secretKey);
+        req.setFilialId(filialId);
         req.setName(name);
         req.setDocument(document);
         req.setEmail(email);
