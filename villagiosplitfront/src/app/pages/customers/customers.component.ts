@@ -25,7 +25,6 @@ export class CustomersComponent implements OnInit {
   // Filial selection
   filialSelecionada: string = '';
   filiais: { [key: string]: Filial } = {};
-  currentSecretKey: string = '';
 
   // Customer list
   customers: CustomerData[] = [];
@@ -35,7 +34,7 @@ export class CustomersComponent implements OnInit {
 
   // Create form
   newCustomer: CreateCustomerRequest = {
-    secretKey: '',
+    filialId: '',
     name: '',
     email: '',
     document: '',
@@ -81,48 +80,23 @@ export class CustomersComponent implements OnInit {
     });
   }
 
-  getFilialConfig(): { secretKey: string; publicKey: string; nome: string } | null {
+  getFilialConfig(): { publicKey: string; nome: string } | null {
     const filial = this.filiais[this.filialSelecionada];
     if (filial) {
       return {
         ...filial,
-        secretKey: this.currentSecretKey,
       };
     }
     return null;
   }
 
   onFilialChange(): void {
-    this.currentSecretKey = '';
     this.successMessage = '';
     this.errorMessage = '';
 
-    if (this.filialSelecionada) {
-      this.loadSecretKey();
+    if (this.filialSelecionada && this.activeTab === 'list') {
+      this.loadCustomers();
     }
-  }
-
-  loadSecretKey(): void {
-    if (!this.filialSelecionada) return;
-
-    this.isLoadingSecretKey = true;
-    this.filialService.getSecretKey(this.filialSelecionada).subscribe({
-      next: (res) => {
-        if (res.success && res.secretKey) {
-          this.currentSecretKey = res.secretKey;
-          if (this.activeTab === 'list') {
-            this.loadCustomers();
-          }
-        } else {
-          this.errorMessage = res.error || 'Erro ao obter secretKey';
-        }
-        this.isLoadingSecretKey = false;
-      },
-      error: (err) => {
-        this.errorMessage = 'Erro ao carregar configuração da filial';
-        this.isLoadingSecretKey = false;
-      },
-    });
   }
 
   onTabChange(tab: 'create' | 'list'): void {
@@ -136,7 +110,7 @@ export class CustomersComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    if (!this.currentSecretKey) {
+    if (!this.filialSelecionada) {
       return;
     }
 
@@ -144,7 +118,7 @@ export class CustomersComponent implements OnInit {
     this.errorMessage = '';
 
     this.customerService
-      .listCustomers(this.currentSecretKey, {
+      .listCustomers(this.filialSelecionada, {
         page: this.currentPage,
         size: this.pageSize,
       })
@@ -166,8 +140,8 @@ export class CustomersComponent implements OnInit {
   }
 
   createCustomer(): void {
-    if (!this.currentSecretKey) {
-      this.errorMessage = 'Aguarde a secretKey carregar ou selecione outra filial!';
+    if (!this.filialSelecionada) {
+      this.errorMessage = 'Selecione uma filial!';
       return;
     }
 
@@ -182,7 +156,7 @@ export class CustomersComponent implements OnInit {
 
     const request: CreateCustomerRequest = {
       ...this.newCustomer,
-      secretKey: this.currentSecretKey,
+      filialId: this.filialSelecionada,
     };
 
     this.customerService.createCustomer(request).subscribe({
@@ -205,7 +179,7 @@ export class CustomersComponent implements OnInit {
 
   resetForm(): void {
     this.newCustomer = {
-      secretKey: '',
+      filialId: '',
       name: '',
       email: '',
       document: '',
