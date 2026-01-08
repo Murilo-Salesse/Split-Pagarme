@@ -161,20 +161,54 @@
         <label class="block text-sm font-semibold text-gray-700 mb-2"
           >Selecionar Cliente</label
         >
+        
+        <!-- Campo de busca -->
+        <div class="relative">
+          <div class="flex items-center mb-2">
+            <span class="absolute left-3 text-gray-400">
+              🔍
+            </span>
+            <input
+              type="text"
+              [(ngModel)]="customerSearchTerm"
+              (input)="filterCustomers()"
+              placeholder="Buscar cliente por nome..."
+              class="w-full p-3 pl-10 border border-blue-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm"
+            />
+            <button
+              *ngIf="customerSearchTerm"
+              (click)="clearCustomerSearch()"
+              type="button"
+              class="absolute right-3 text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+        
+        <!-- Select com clientes filtrados -->
         <select
           [(ngModel)]="selectedCustomerId"
           [disabled]="isLoadingCustomers"
           class="w-full p-3 border border-blue-300 rounded-lg bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+          [size]="filteredCustomers.length > 0 ? Math.min(filteredCustomers.length + 1, 8) : 1"
         >
           <option value="">
             {{ isLoadingCustomers ? 'Carregando clientes...' : 'Selecione um cliente' }}
           </option>
-          <option *ngFor="let customer of customers" [value]="customer.id">
+          <option *ngFor="let customer of filteredCustomers" [value]="customer.id">
             {{ customer.name }} ({{ customer.email || customer.document || customer.id }})
           </option>
         </select>
+        
+        <p *ngIf="filteredCustomers.length === 0 && customerSearchTerm && !isLoadingCustomers" class="text-xs text-orange-600 mt-2">
+          ⚠️ Nenhum cliente encontrado para "{{ customerSearchTerm }}"
+        </p>
         <p *ngIf="customers.length === 0 && !isLoadingCustomers" class="text-xs text-blue-700 mt-2">
           ℹ️ Nenhum cliente cadastrado. <a routerLink="/customers" class="underline font-semibold">Cadastre um cliente</a> ou preencha os dados manualmente.
+        </p>
+        <p *ngIf="filteredCustomers.length > 0" class="text-xs text-gray-500 mt-1">
+          {{ filteredCustomers.length }} cliente(s) encontrado(s)
         </p>
       </div>
 
@@ -201,6 +235,37 @@
             class="p-2 border border-blue-300 rounded bg-white text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
           />
         </div>
+        
+        <!-- Telefone Celular - Obrigatório para PIX -->
+        <div *ngIf="paymentMethod === 'pix'" class="space-y-2">
+          <label class="block text-sm font-semibold text-gray-700">
+            📱 Telefone Celular *
+            <span class="text-xs font-normal text-orange-600 ml-1">⚠️ Obrigatório para pagamentos PIX</span>
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs text-gray-600 mb-1">DDD</label>
+              <input
+                type="text"
+                [(ngModel)]="phoneAreaCode"
+                placeholder="11"
+                maxlength="2"
+                class="w-full p-2 border border-blue-300 rounded bg-white text-sm text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+              />
+            </div>
+            <div class="col-span-2">
+              <label class="block text-xs text-gray-600 mb-1">Número</label>
+              <input
+                type="text"
+                [(ngModel)]="phoneNumber"
+                placeholder="999999999"
+                maxlength="9"
+                class="w-full p-2 border border-blue-300 rounded bg-white text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+              />
+            </div>
+          </div>
+        </div>
+        
         <p class="text-xs text-blue-700">
           ℹ️ Dados necessários para processar o pagamento direto
         </p>

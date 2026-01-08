@@ -66,9 +66,18 @@ export class CheckoutComponent implements OnInit {
 
   // Clientes cadastrados
   customers: CustomerData[] = [];
+  filteredCustomers: CustomerData[] = [];
+  customerSearchTerm: string = '';
   selectedCustomerId: string = '';
   useExistingCustomer: boolean = false;
   isLoadingCustomers: boolean = false;
+
+  // Telefone para PIX (obrigatório)
+  phoneAreaCode: string = '';
+  phoneNumber: string = '';
+
+  // Expor Math para uso no template
+  Math = Math;
 
   constructor(
     private checkoutService: CheckoutService,
@@ -115,11 +124,13 @@ export class CheckoutComponent implements OnInit {
     if (!this.filialSelecionada) return;
 
     this.isLoadingCustomers = true;
+    this.customerSearchTerm = '';
     // Agora passa o ID da filial
     this.customerService.listCustomers(this.filialSelecionada, { size: 50 }).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.customers = res.data.data || [];
+          this.filteredCustomers = [...this.customers];
         }
         this.isLoadingCustomers = false;
       },
@@ -127,6 +138,27 @@ export class CheckoutComponent implements OnInit {
         this.isLoadingCustomers = false;
       },
     });
+  }
+
+  filterCustomers() {
+    const term = this.customerSearchTerm.toLowerCase().trim();
+    if (!term) {
+      this.filteredCustomers = [...this.customers];
+    } else {
+      this.filteredCustomers = this.customers.filter(customer =>
+        customer.name?.toLowerCase().includes(term) ||
+        customer.email?.toLowerCase().includes(term)
+      );
+    }
+    // Limpar seleção se o cliente selecionado não estiver na lista filtrada
+    if (this.selectedCustomerId && !this.filteredCustomers.find(c => c.id === this.selectedCustomerId)) {
+      this.selectedCustomerId = '';
+    }
+  }
+
+  clearCustomerSearch() {
+    this.customerSearchTerm = '';
+    this.filteredCustomers = [...this.customers];
   }
 
   getFilialConfig(): Filial | null {
@@ -260,6 +292,21 @@ export class CheckoutComponent implements OnInit {
           alert('Por favor, preencha os dados do cliente!');
           return false;
         }
+        // Validação de telefone para PIX
+        if (this.paymentMethod === 'pix') {
+          if (!this.phoneAreaCode || !this.phoneNumber) {
+            alert('Por favor, preencha o telefone celular (obrigatório para PIX)!');
+            return false;
+          }
+          if (this.phoneAreaCode.length !== 2) {
+            alert('O DDD deve ter 2 dígitos!');
+            return false;
+          }
+          if (this.phoneNumber.length < 8 || this.phoneNumber.length > 9) {
+            alert('O número de telefone deve ter 8 ou 9 dígitos!');
+            return false;
+          }
+        }
       }
     }
 
@@ -331,7 +378,18 @@ export class CheckoutComponent implements OnInit {
     if (this.useExistingCustomer && this.selectedCustomerId) {
       body.customerId = this.selectedCustomerId;
     } else {
-      body.customer = this.customerData;
+      // Adicionar telefone ao customerData para PIX
+      const customerWithPhone: Customer = {
+        ...this.customerData,
+        phones: {
+          mobile_phone: {
+            country_code: '55',
+            area_code: this.phoneAreaCode,
+            number: this.phoneNumber
+          }
+        }
+      };
+      body.customer = customerWithPhone;
     }
 
     this.checkoutService
@@ -468,6 +526,10 @@ export class CheckoutComponent implements OnInit {
       documentType: 'CPF',
       type: 'individual',
     };
+    this.phoneAreaCode = '';
+    this.phoneNumber = '';
+    this.customerSearchTerm = '';
+    this.filteredCustomers = [];
     this.recebedoresDisponiveis = [];
 
     this.clearResults();
