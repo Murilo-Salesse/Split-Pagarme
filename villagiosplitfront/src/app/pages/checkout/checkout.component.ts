@@ -161,6 +161,17 @@ export class CheckoutComponent implements OnInit {
     this.filteredCustomers = [...this.customers];
   }
 
+  getSelectedCustomer(): CustomerData | null {
+    if (!this.selectedCustomerId) return null;
+    return this.customers.find(c => c.id === this.selectedCustomerId) || null;
+  }
+
+  clearSelectedCustomer() {
+    this.selectedCustomerId = '';
+    this.customerSearchTerm = '';
+    this.filteredCustomers = [...this.customers];
+  }
+
   getFilialConfig(): Filial | null {
     return this.filiais[this.filialSelecionada] || null;
   }
